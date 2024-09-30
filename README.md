@@ -1,51 +1,41 @@
-# RDMA exmaple
+# RDMA使用教程
+- 基于RDMACM的连接
+- 没有RDMA网卡可以参考这个[教程](https://github.com/animeshtrivedi/blog/blob/master/post/2019-06-26-siw.md)。
 
-A simple RDMA server client example. The code contains a lot of comments. Here is the workflow that happens in the example: 
+## 在Ubuntu 22.04及以上安装软件模拟的RDMA
+- 本人在ubuntu 24.04上测试过，能够正常运行。
+- 查看RDMA网卡是否支持，通过命令
+```
+# 要安装rdma-core之后才有这个二进制
+ibv_devices
+ibv_devinfo -d siw0
+```
+## 依赖库
 
-Client: 
-  1. setup RDMA resources   
-  2. connect to the server 
-  3. receive server side buffer information via send/recv exchange 
-  4. do an RDMA write to the server buffer from a (first) local buffer. The content of the buffer is the string passed with the `-s` argument. 
-  5. do an RDMA read to read the content of the server buffer into a second local buffer. 
-  6. compare the content of the first and second buffers, and match them. 
-  7. disconnect 
+- rdma-core 源码编译安装即可
+- libibverbs 基于包安装
 
-Server: 
-  1. setup RDMA resources 
-  2. wait for a client to connect 
-  3. allocate and pin a server buffer
-  4. accept the incoming client connection 
-  5. send information about the local server buffer to the client 
-  6. wait for disconnect
+```
+apt install libibverbs-dev -y
+```
 
-###### How to run      
-```text
-git clone https://github.com/animeshtrivedi/rdma-example.git
-cd ./rdma-example
-cmake .
+## 编译
+
+```
+cd src
 make
-``` 
- 
-###### server
-```text
-./bin/rdma_server
-```
-###### client
-```text
-atr@atr:~/rdma-example$ ./bin/rdma_client -a 127.0.0.1 -s textstring 
-Passed string is : textstring , with count 10 
-Trying to connect to server at : 127.0.0.1 port: 20886 
-The client is connected successfully 
----------------------------------------------------------
-buffer attr, addr: 0x5629832e22c0 , len: 10 , stag : 0x1617b400 
----------------------------------------------------------
-...
-SUCCESS, source and destination buffers match 
-Client resource clean up is complete 
-atr@atr:~/rdma-example$ 
-
 ```
 
-## Does not have an RDMA device?
-In case you do not have an RDMA device to test the code, you can setup SofitWARP software RDMA device on your Linux machine. Follow instructions here: [https://github.com/animeshtrivedi/blog/blob/master/post/2019-06-26-siw.md](https://github.com/animeshtrivedi/blog/blob/master/post/2019-06-26-siw.md).
+## 运行
+
+```c
+
+# 服务端
+./server -a 10.0.4.7
+# 客户端
+./client -a 10.0.4.7 -s textstring 
+```
+
+## 感谢
+
+感谢大佬开源的[项目](https://github.com/animeshtrivedi/rdma-example)
